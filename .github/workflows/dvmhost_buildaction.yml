@@ -146,4 +146,6 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v2.0.4
         with:
+          tag_name: ${{ needs.setup.outputs.DATE }}
+          name: Build ${{ needs.setup.outputs.DATE }}
           files: ${{ env.PACKAGENAME }}.zip
