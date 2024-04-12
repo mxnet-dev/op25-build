@@ -56,14 +56,19 @@ jobs:
 
       - name: Setup repositories
         run: |
-          sudo dpkg --add-architecture ${{ matrix.arch }}
-          echo "deb [arch=amd64,arm64] http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse" | sudo tee /etc/apt/sources.list
-          echo "deb [arch=amd64,arm64] http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=amd64,arm64] http://archive.ubuntu.com/ubuntu jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          if [ "${{ matrix.arch }}" == "arm64" ] || [ "${{ matrix.arch }}" == "arm" ]; then
-            echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-            echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-            echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb http://archive.ubuntu.com/ubuntu jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
+            sudo dpkg --add-architecture arm64
+            echo "deb http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+            echo "deb http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+            echo "deb http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          elif [ "${{ matrix.arch }}" == "arm" ] || [ "${{ matrix.arch }}" == "armhf" ]; then
+            sudo dpkg --add-architecture armhf
+            echo "deb http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+            echo "deb http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+            echo "deb http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
           fi
           sudo apt-get update
 
