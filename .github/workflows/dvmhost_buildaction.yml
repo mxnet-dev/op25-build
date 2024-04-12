@@ -56,14 +56,20 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo dpkg --add-architecture arm64
           sudo apt-get update
           sudo apt-get install -y build-essential cmake \
             g++-arm-linux-gnueabihf \
             gcc-arm-linux-gnueabihf \
             g++-aarch64-linux-gnu \
             gcc-aarch64-linux-gnu \
-            libasio-dev:arm64 libncurses-dev:arm64 libssl-dev:arm64
+            libasio-dev libncurses-dev libssl-dev
+
+          if [ "${{ matrix.arch }}" == "aarch64" ]; then
+            sudo dpkg --add-architecture arm64
+            sudo apt-get update
+            sudo apt-get install -y libasio-dev:arm64 libncurses-dev:arm64 libssl-dev:arm64
+          fi
+
 
       - name: Build package
         run: |
