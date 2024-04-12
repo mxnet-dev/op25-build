@@ -77,8 +77,8 @@ jobs:
 
       - name: Build package
         run: |
-          mkdir build
-          cd build
+          mkdir -p ${{ github.workspace }}/build
+          cd ${{ github.workspace }}/build
           if [[ "${{ matrix.arch }}" == "arm" ]]; then
             cmake -DCROSS_COMPILE_ARM=1 ..
           elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
@@ -92,8 +92,9 @@ jobs:
 
       - name: Create package
         run: |
-          mkdir -p ${{ env.PACKAGENAME }}
-          cp dvmhost dvmfne dvmcmd dvmmon ${{ env.PACKAGENAME }}
+          mkdir -p ${{ github.workspace }}/${{ env.PACKAGENAME }}
+          cp ${{ github.workspace }}/build/dvmhost ${{ github.workspace }}/build/dvmfne ${{ github.workspace }}/build/dvmcmd ${{ github.workspace }}/build/dvmmon ${{ github.workspace }}/${{ env.PACKAGENAME }}
+          cd ${{ github.workspace }}
           zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
 
       - name: Upload artifact
