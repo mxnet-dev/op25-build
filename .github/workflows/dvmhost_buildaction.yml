@@ -38,7 +38,7 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        arch: ["amd64", "arm", "aarch64", "armhf"]
+        arch: ["amd64", "arm", "arm64", "armhf"]
     runs-on: ubuntu-22.04
 
     env:
@@ -70,7 +70,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install -y build-essential cmake libasio-dev libncurses-dev libssl-dev
-          if [ "${{ matrix.arch }}" == "aarch64" ]; then
+          if [ "${{ matrix.arch }}" == "arm64" ]; then
             sudo apt-get install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
           elif [ "${{ matrix.arch }}" == "arm" ]; then
             sudo apt-get install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
@@ -84,7 +84,7 @@ jobs:
           cd build
           if [[ "${{ matrix.arch }}" == "arm" ]]; then
             cmake -DCROSS_COMPILE_ARM=1 ..
-          elif [[ "${{ matrix.arch }}" == "aarch64" ]]; then
+          elif [[ "${{ matrix.arch }}" == "arm64" ]]; then
             cmake -DCROSS_COMPILE_AARCH64=1 ..
           elif [[ "${{ matrix.arch }}" == "armhf" ]]; then
             cmake -DCROSS_COMPILE_RPI_ARM=1 ..
@@ -128,7 +128,7 @@ jobs:
     needs: [setup, build, create-release]
     strategy:
       matrix:
-        arch: ["amd64", "arm", "aarch64", "armhf"]
+        arch: ["amd64", "arm", "arm64", "armhf"]
     runs-on: ubuntu-22.04
 
     env:
