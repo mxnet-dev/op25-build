@@ -141,7 +141,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4.1.4
         with:
-          name: ${{ needs.setup.outputs.APPNAME }}-${{ matrix.arch }}
+          name: ${{ env.PACKAGENAME }}-${{ matrix.arch }}
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v2.0.4
