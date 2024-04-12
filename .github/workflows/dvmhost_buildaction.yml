@@ -61,7 +61,7 @@ jobs:
             g++-arm-linux-gnueabihf \
             gcc-arm-linux-gnueabihf \
             g++-aarch64-linux-gnu \
-            libasio-dev libssl-dev
+            libasio-dev libncurses-dev libssl-dev
 
       - name: Build package
         run: |
