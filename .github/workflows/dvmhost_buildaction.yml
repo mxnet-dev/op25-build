@@ -54,17 +54,24 @@ jobs:
           ref: master
           submodules: recursive
 
+      - name: Setup dependencies
+        run: |
+          sudo dpkg --add-architecture armhf
+          sudo dpkg --add-architecture arm64
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo apt-get update
+
       - name: Install dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install -y gcc g++ cmake make libasio-dev libncurses-dev libssl-dev
           if [ "${{ matrix.arch }}" == "arm64" ]; then
-            sudo dpkg --add-architecture arm64
-            sudo apt-get update
             sudo apt-get install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu libasio-dev:arm64 libncurses-dev:arm64 libssl-dev:arm64
           elif [ "${{ matrix.arch }}" == "arm" ] || [ "${{ matrix.arch }}" == "armhf" ]; then
-            sudo dpkg --add-architecture armhf
-            sudo apt-get update
             sudo apt-get install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf libasio-dev:armhf libncurses-dev:armhf libssl-dev:armhf
           fi
 
