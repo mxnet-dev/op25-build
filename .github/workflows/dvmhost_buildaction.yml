@@ -1,0 +1,133 @@
+# Author: Max
+# Credits: K4YT3X <i@k4yt3x.com>
+
+name: dvmhost-build-action
+
+on:
+  workflow_dispatch:
+
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+
+  setup:
+    name: Setup
+    runs-on: ubuntu-22.04
+
+    outputs:
+      APPNAME: ${{ steps.get_appname.outputs.APPNAME }}
+      DATE: ${{ steps.get_date.outputs.DATE }}
+
+    steps:
+
+      - name: Get app name
+        id: get_appname
+        run: echo APPNAME=${{ github.event.repository.name }} >> $GITHUB_OUTPUT
+
+      - name: Get date
+        id: get_date
+        run: echo DATE=$(date +'%Y-%m-%d') >> $GITHUB_OUTPUT
+
+  build:
+    name: Build
+    needs: [setup]
+    strategy:
+      matrix:
+        arch: ["amd64", "arm", "aarch64", "armhf"]
+    runs-on: ubuntu-22.04
+
+    env:
+      PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.DATE }}-${{ matrix.arch }}
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+
+      - name: Checkout DVMProject/dvmhost
+        uses: actions/checkout@v4.1.1
+        with:
+          repository: DVMProject/dvmhost
+          ref: master
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake \
+            g++-arm-linux-gnueabihf \
+            gcc-arm-linux-gnueabihf \
+            g++-aarch64-linux-gnu \
+            libasio-dev libssl-dev
+
+      - name: Build package
+        run: |
+          mkdir build
+          cd build
+          if [[ "${{ matrix.arch }}" == "arm" ]]; then
+            cmake -DCROSS_COMPILE_ARM=1 ..
+          elif [[ "${{ matrix.arch }}" == "aarch64" ]]; then
+            cmake -DCROSS_COMPILE_AARCH64=1 ..
+          elif [[ "${{ matrix.arch }}" == "armhf" ]]; then
+            cmake -DCROSS_COMPILE_RPI_ARM=1 ..
+          else
+            cmake ..
+          fi
+          make -j $(nproc)
+
+      - name: Create package
+        run: |
+          mkdir -p ${{ env.PACKAGENAME }}
+          cp dvmhost dvmfne dvmcmd dvmmon ${{ env.PACKAGENAME }}
+          zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: ${{ env.PACKAGENAME }}-${{ matrix.arch }}
+          path: ${{ env.PACKAGENAME }}.zip
+
+  create-release:
+    name: Create release
+    needs: [setup, build]
+    runs-on: ubuntu-22.04
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v2.0.4
+        with:
+          tag_name: ${{ needs.setup.outputs.DATE }}
+          name: Build ${{ needs.setup.outputs.DATE }}
+          draft: false
+          prerelease: false
+
+  upload:
+    name: Upload
+    needs: [setup, build, create-release]
+    strategy:
+      matrix:
+        arch: ["amd64", "arm", "aarch64", "armhf"]
+    runs-on: ubuntu-22.04
+
+    env:
+      PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.DATE }}-${{ matrix.arch }}
+      DEBIAN_FRONTEND: noninteractive
+
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4.1.4
+        with:
+          name: ${{ needs.setup.outputs.APPNAME }}-${{ matrix.arch }}
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2.0.4
+        with:
+          files: ${{ env.PACKAGENAME }}.zip
