@@ -56,29 +56,22 @@ jobs:
 
       - name: Setup repositories
         run: |
-          sudo dpkg --add-architecture arm64
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse" | sudo tee /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo dpkg --add-architecture ${{ matrix.arch }}
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
           sudo apt-get update
 
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake \
-            g++-arm-linux-gnueabihf \
-            gcc-arm-linux-gnueabihf \
-            libasio-dev libncurses-dev libssl-dev
-
+          sudo apt-get install -y build-essential cmake libasio-dev libncurses-dev libssl-dev
           if [ "${{ matrix.arch }}" == "aarch64" ]; then
-            sudo dpkg --add-architecture arm64
-            sudo apt-get update
-            sudo apt-get install -y libasio-dev:arm64 libncurses-dev:arm64 libssl-dev:arm64
+            sudo apt-get install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
           elif [ "${{ matrix.arch }}" == "arm" ]; then
-            sudo dpkg --add-architecture armhf
-            sudo apt-get update
-            sudo apt-get install -y libasio-dev:armhf libncurses-dev:armhf libssl-dev:armhf
+            sudo apt-get install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
+          elif [ "${{ matrix.arch }}" == "armhf" ]; then
+            sudo apt-get install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
           fi
 
       - name: Build package
