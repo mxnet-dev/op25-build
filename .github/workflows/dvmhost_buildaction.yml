@@ -57,11 +57,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc g++ cmake make
+          sudo apt-get install -y gcc g++ cmake make libasio-dev libncurses-dev libssl-dev
           if [ "${{ matrix.arch }}" == "arm64" ]; then
-            sudo apt-get install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu libasio-dev:arm64 libncurses-dev:arm64 libssl-dev:arm64
+            sudo apt-get install -y g++-aarch64-linux-gnu gcc-aarch64-linux-gnu
           elif [ "${{ matrix.arch }}" == "arm" ] || [ "${{ matrix.arch }}" == "armhf" ]; then
-            sudo apt-get install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf libasio-dev:armhf libncurses-dev:armhf libssl-dev:armhf
+            sudo apt-get install -y g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf
           fi
 
       - name: Build package
